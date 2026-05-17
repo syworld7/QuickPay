@@ -1,180 +1,271 @@
-# QuickPay
+```md
+# QuickPay 💳
 
-A secure payment checkout and transaction dashboard built with React, TypeScript, and Vite for the AxiPay payment assignment.
+QuickPay is a modern payment checkout and transaction dashboard built using React + TypeScript + Vite.
 
-**API base URL:** `https://payment-assignment.onrender.com`
+The project focuses on:
+- Secure payment processing
+- Clean UI/UX
+- Transaction analytics
+- API integration
+- Responsive design
 
-## Live Demo
+---
 
-Deploy with Vercel, Netlify, or GitHub Pages:
+# 🌐 Live Demo
+
+👉 https://quickpays.netlify.app/
+
+---
+
+# 🚀 Features
+
+## ✅ Payment Checkout
+
+- Card holder details collection
+- Secure card number handling
+- Card masking support
+- CVV masking
+- Currency & amount support
+- Billing address & phone input
+- Country selection
+- Responsive checkout UI
+
+### Security Features
+
+- Luhn Algorithm validation
+- HMAC-SHA256 hash generation
+- Secure API request handling
+- Sensitive data masking
+
+---
+
+## 📊 Dashboard
+
+- Total Transactions
+- Successful Payments
+- Failed & Pending Payments
+- Success Volume Metrics
+- Currency Distribution
+- Transaction Status Breakdown
+- Transaction History Table
+
+---
+
+## 📈 Charts Included
+
+- Doughnut Chart
+- Line Chart
+- Transaction Analytics
+- Currency Distribution
+
+---
+
+# 🛠️ Tech Stack
+
+| Technology | Usage |
+|---|---|
+| React | Frontend UI |
+| TypeScript | Type Safety |
+| Vite | Build Tool |
+| Tailwind CSS | Styling |
+| React Router | Routing |
+| Chart.js / Recharts | Charts |
+| Axios / Fetch API | API Calls |
+
+---
+
+# 📂 Project Structure
 
 ```bash
-pnpm build
-# Deploy the dist/ folder
-```
-
-Add your live URL here after deployment.
-
-## Features
-
-### Checkout (`/`)
-
-- Collects card holder, email, card details, amount, currency, billing address, and phone
-- **Luhn validation** on card numbers before submission
-- **Card brand icons** (Visa, Mastercard, Amex, Discover, RuPay)
-- **Masked card display** (first 6 + last 4 visible when blurred)
-- **Masked CVV** via password input; never logged to console
-- **HMAC-SHA256** `Hash` header per API spec (secret: `AXI2026`)
-- Payment redirect via **popup window** or **iframe** (user-selectable)
-- Redirect completion via **CORS GET** on `redirect_url` (JSON response)
-- Status modal for **Success**, **Failed**, and **Pending**
-
-### Dashboard (`/dashboard`)
-
-- **Summary cards:** total transactions, success volume, success count, failed + pending count
-- **Charts:** status breakdown (doughnut), volume over time (line), currency distribution (doughnut)
-- **Paginated transaction table** with masked card numbers and `***` for CVC
-  - Default page size: **10** (options: 5, 10, 20, 50)
-  - `GET /transactions?page={page}&limit={limit}`
-- Charts and summary use a dedicated fetch (`page=1`, `limit=500`) for aggregate metrics
-
-### 404 (`/*`)
-
-- Catch-all route with a link back to checkout
-
-## Routes
-
-| Path | Page |
-|------|------|
-| `/` | Checkout |
-| `/dashboard` | Transaction dashboard |
-| `*` | 404 Not Found |
-
-Pages are **lazy-loaded** with a shared loading fallback (`PageFallback`).
-
-## Project Structure
-
-```
 src/
-├── App.tsx                      # BrowserRouter entry
-├── routes/
-│   └── AppRoutes.tsx            # Lazy routes + Suspense
-├── pages/
-│   ├── CheckoutPage.tsx
-│   ├── DashboardPage.tsx
-│   └── NotFoundPage.tsx
-├── layout/
-│   └── AppLayout.tsx              # Header nav + outlet
 ├── components/
-│   ├── CheckoutForm.tsx           # Payment form + redirect flow
-│   ├── PaymentRedirect.tsx        # Popup / iframe handler
-│   ├── StatusModal.tsx
-│   ├── PageFallback.tsx           # Route loading UI
-│   ├── MaskedCardInput.tsx
-│   ├── MaskedCvvInput.tsx
-│   ├── PhoneInput.tsx
-│   ├── CardBrandIcon.tsx
-│   ├── DashboardSummary.tsx
-│   ├── TransactionCharts.tsx
-│   ├── TransactionTable.tsx
-│   └── Pagination.tsx
-├── hooks/
-│   ├── useInitiatePayment.ts
-│   ├── useCompletePaymentRedirect.ts
-│   └── useTransactions.ts
+├── pages/
+├── routes/
 ├── services/
-│   ├── client.ts                  # API_BASE_URL, error helpers
-│   ├── initiatePayment.ts         # POST /initiate-payment
-│   ├── completePaymentRedirect.ts # GET redirect_url
-│   └── fetchTransactions.ts       # GET /transactions
+├── hooks/
 ├── utils/
-│   ├── crypto.ts                  # HMAC-SHA256 hash
-│   ├── cardNumberValidation.ts    # Luhn check
-│   ├── maskCardNumber.ts          # Card masking
-│   ├── validation.ts              # Zod schema
-│   ├── transactions.ts            # API → domain mapping
-│   ├── dashboard.ts               # Metrics + chart helpers
-│   ├── paymentProcessingTemplate.ts
-│   ├── paymentStatusTemplate.ts
-│   └── paymentRedirectWindow.ts
-├── constants/
-│   └── dashboard.ts               # Pagination defaults
-└── types/
-    └── index.ts
+├── types/
+└── constants/
+
 ```
 
-## API Integration
+---
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| `POST` | `/initiate-payment` | Start payment; returns `redirect_url` |
-| `GET` | `{redirect_url}` | Complete payment; returns JSON `{ status, message }` |
-| `GET` | `/transactions?page=&limit=` | List transactions |
+# 🔗 API Integration
 
-### Initiate payment
+### Initiate Payment
 
-- Request body uses camelCase (`orderId`, `cardNumber`, `cardCVC`, etc.)
-- Response uses `redirect_url` for the redirect step
+```http
+POST /initiate-payment
 
-### Transactions
-
-- Table: `page` + `limit` from pagination controls
-- Charts/summary: `page=1`, `limit=500` (`TRANSACTIONS_CHART_LIMIT`)
-
-## Payment Flow
-
-```mermaid
-sequenceDiagram
-  participant User
-  participant CheckoutForm
-  participant API as payment-assignment API
-  participant Redirect as Popup/Iframe
-
-  User->>CheckoutForm: Submit form (Luhn validated)
-  CheckoutForm->>CheckoutForm: Generate HMAC Hash
-  CheckoutForm->>API: POST /initiate-payment
-  API-->>CheckoutForm: redirect_url
-  CheckoutForm->>Redirect: Show popup or iframe loader
-  Redirect->>API: GET redirect_url (CORS)
-  API-->>Redirect: JSON status + message
-  Redirect-->>CheckoutForm: Success / Failed / Pending
-  CheckoutForm->>User: StatusModal
 ```
 
-### Hash Generation
+### Fetch Transactions
 
-1. Extract first 6 and last 4 digits of card number
-2. Concatenate → reverse the 10-digit string
-3. Reverse email → build `reverse(email) + "AXIPAYS" + reverse(digits)`
-4. Uppercase → HMAC-SHA256 with key `AXI2026` → uppercase hex `Hash` header
+```http
+GET /transactions?page=1&limit=100
 
-## Assumptions & Decisions
+```
 
-- **Redirect status:** Fetched by calling `redirect_url` from the parent window (CORS-enabled JSON), not `postMessage`
-- **Request deduplication:** Concurrent redirect GETs are cached briefly (React Strict Mode)
-- **Popup blocked:** Verification still runs on the main page; user sees an inline warning
-- **Card masking:** Raw digits in form state only; UI masks on blur
-- **Failed count metric:** Includes both **Failed** and **Pending** per assignment spec
-- **Volume over time:** Sums successful amounts grouped by `created_at` date
-- **No backend proxy:** Hash is computed client-side as required by the assignment
-- **Charts vs table:** Separate API calls so summary/charts can use more rows than the current table page
+---
 
-## Scripts
+# 🔐 Hash Generation
+
+The payment request uses a secure `HMAC-SHA256` hash.
+
+Steps:
+
+1. Extract first 6 and last 4 digits
+2. Reverse values
+3. Reverse email
+4. Build message
+5. Convert to uppercase
+6. Encrypt using `AXI2026`
+
+---
+
+# 🧾 Routes
+
+
+| Route        | Description           |
+| ------------ | --------------------- |
+| `/`          | Checkout Page         |
+| `/dashboard` | Transaction Dashboard |
+| `*`          | 404 Page              |
+
+
+---
+
+# 🚀 Getting Started
+
+Follow these steps to run the project locally on your machine.
+
+## 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/syworld7/quickpay.git
+
+```
+
+---
+
+## 2️⃣ Navigate to Project Folder
+
+```bash
+cd quickpay
+
+```
+
+---
+
+## 3️⃣ Install Dependencies
+
+Using pnpm:
 
 ```bash
 pnpm install
-pnpm dev       # http://localhost:5173
-pnpm build     # production build → dist/
-pnpm preview   # preview production build
-pnpm lint      # ESLint
+
 ```
 
-## Tech Stack
+OR using npm:
 
-- React 19 + TypeScript
-- Vite 8
-- Tailwind CSS 4
-- React Hook Form + Zod
-- Axios
-- Chart.js + react-chartjs-2
-- React Router 7
+```bash
+npm install
+
+```
+
+---
+
+## 4️⃣ Start Development Server
+
+Using pnpm:
+
+```bash
+pnpm dev
+
+```
+
+OR using npm:
+
+```bash
+npm run dev
+
+```
+
+---
+
+## 5️⃣ Open in Browser
+
+Visit:
+
+```text
+http://localhost:5173
+
+```
+
+---
+
+# 🏗️ Build for Production
+
+Using pnpm:
+
+```bash
+pnpm build
+
+```
+
+OR using npm:
+
+```bash
+npm run build
+
+```
+
+---
+
+# 🔍 Preview Production Build
+
+Using pnpm:
+
+```bash
+pnpm preview
+
+```
+
+OR using npm:
+
+```bash
+npm run preview
+
+```
+
+---
+
+# 🌍 Deployment
+
+The project is deployed on **Netlify**.
+
+Live URL:  
+👉 [https://quickpays.netlify.app/](https://quickpays.netlify.app/)
+
+---
+
+# ✨ Highlights
+
+- Fully Responsive
+- Clean Modern UI
+- Secure Payment Flow
+- API Integration
+- Dashboard Analytics
+- TypeScript Support
+- Production Ready Structure
+
+---
+
+# 👨‍💻 Author
+
+GitHub: [https://github.com/syworld7](https://github.com/syworld7)
+
+
+
